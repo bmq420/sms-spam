@@ -56,24 +56,17 @@
     font-size: 30px;
 }
 
-/* 
-.message:after {
-    content: " ";
-    position: absolute;
-    left: -15px;
-    top: 15px;
-    border-top: 15px solid transparent;
-    border-right: 15px solid black;
-    border-left: none;
-    border-bottom: 15px solid transparent;
-} */
-
 .message-box {
     width: 100%;
     height: 100vh;
     background-color: #353740;
     display: grid;
     grid-template-rows: 1fr 2fr 1fr 5fr;
+}
+
+.message-box > h3 {
+    font-size: 20px;
+    padding: 20px 60px;
 }
 
 .message-box > p {
@@ -116,31 +109,56 @@
 .message-box > .butt > button {
     width: 100px;
     height: 40px;
-    background-color: #04AA6D;
-    box-shadow: 0 12px #666;
-    color: white;
+    background-color: white;
+    box-shadow: 0 8px #666;
+    color: black;
     border: 1px solid #d9d9e3;
     border-radius: 5px;
-    font-size: 20px;
+    font-size: 15px;
     margin: 20px 20px;
 }
 
 .message-box > .butt > button:hover {
-    background-color: #3e8e41;
+    background-color: #666;
+    color: white;
 }
 
 .message-box > .butt > button:active {
-    box-shadow: 0 6px #666;
+    box-shadow: 0 5px #666;
     background-color: #3e8e41;
     color: white;
     transform: translateY(4px);
 }
 
-.message-box > .result {
+.result {
     font-size: 20px;
     color: white;
     background-color: #6e6e80;
     padding: 20px 60px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+}
+
+.result > h3 {
+    font-size: 20px;
+}
+
+.result > p {
+    padding-top: 20px;
+}
+
+.model-result {
+    width: 200px;
+    height: 40px;
+    margin-top: 20px;
+    padding-left: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.model-result:focus {
+    outline: none;
 }
 
 /*history*/
@@ -149,6 +167,12 @@
     display: grid;
     grid-template-rows: auto auto auto;
     background-color: #353740;
+}
+
+.history > h3 {
+    font-size: 20px;
+    padding: 20px 60px;
+    color: white;
 }
 
 .history-button {
@@ -212,9 +236,31 @@
     align-items: center;
 }
 
+.history-table-header {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr 40px;
+    border: 1px solid #d9d9e3;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 40px;
+    background-color: #353740;
+}
+
+.history-table-header > p {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    border-right: 0.5px solid white;
+    font-size: 15px;
+}
+
 .message-history-element {
     display: grid;
-    grid-template-columns: 5fr 1fr 40px;
+    grid-template-columns: 3fr 1fr 1fr 1fr 40px;
     border: 1px solid #d9d9e3;
     border-radius: 10px;
     overflow: hidden;
@@ -226,6 +272,7 @@
     justify-content: center;
     background-color: #353740;
     padding: 20px 40px;
+    border: 1px solid white;
 }
 
 .message-input {

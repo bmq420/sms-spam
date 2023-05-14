@@ -1,53 +1,84 @@
-import React from "react" ;
-import axios from "axios" ;
+import React from "react";
+import axios from "axios";
 
 export default function Message(props) {
     const [message, setMessage] = React.useState("");
-    const [result, setResult] = React.useState("")
-
+    const [result, setResult] = React.useState("");
+    const [model, setModel] = React.useState(0);
 
     function handleChange(event) {
-        setMessage(
-            prev => event.target.value
-        );
+        setMessage((prev) => event.target.value);
     }
 
     function clearMessage() {
         setMessage("");
-        setResult("")
+        setResult("");
     }
 
     function sendMessage() {
         const json = {
-            "message": message,
-            "available": 1
-        }
+            message: message,
+            available: 1,
+        };
         console.log(json);
-        axios.post("http://localhost:5000/api/v1", json)
-            .catch(err => {
+        if (message !== "") {
+            axios.post("http://localhost:5000/api/v1", json).catch((err) => {
                 console.log(err);
-            })
-        async function getResult() {
-            const res = await axios.get("http://localhost:5000/api/v1/result")
-            console.log(res.data)
-            setResult(res.data)
+            });
+            async function getResult() {
+                const res = await axios.get(
+                    "http://localhost:5000/api/v1/result"
+                );
+                console.log(res.data);
+                setResult(res.data);
+            }
+            getResult();
         }
-        getResult()
+    }
+
+    function handleModel(event) {
+        setModel(event.target.value);
     }
 
     function displayResult() {
         return (
             <div className="result">
-                <p>MODEL'S RESULT</p>
-                <p>{result}</p>
+                <h3>MODEL'S RESULT</h3>
+                <p>Please select your model: </p>
+                <select
+                    className="model-result"
+                    value={model}
+                    onChange={handleModel}
+                >
+                    <option value="0">-- Choose model</option>
+                    <option value="1">Naive - Bayes</option>
+                    <option value="2">Support Vector Machine</option>
+                    <option value="3">Backpropagation</option>
+                </select>
+                {model === 1 ? (
+                    <p className="bayes-result">{handleResult(result.bayesResult)}</p>
+                ) : model === 2 ? (
+                    <p className="backpro-result">{handleResult(result.backpropagationResult)}</p>
+                ) : model === 3 ? (
+                    <p className="svm-result">{handleResult(result.svmResult)}</p>
+                ) : (
+                    <p></p>
+                )}
             </div>
-        )
+        );
+    }
+
+    function handleResult(value) {
+        if (value === 1) {
+            return "SPAM message";
+        }
+        return "Not a SPAM message";
     }
 
     return (
         <div className="message">
             <div className="message-box">
-                <p>MESSAGE</p>
+                <h3>MESSAGE</h3>
                 <textarea
                     value={message}
                     id=""
