@@ -19,9 +19,10 @@ export default function History(props) {
 
     function clearHistory() {
         axios
-            .post("http://localhost:5000/api/v1")
+            .post("http://localhost:5000/api/v1/clear")
             .then((res) => {
                 console.log("Clear history");
+                setHistory([]);
             })
             .catch((err) => {
                 console.log(err);
@@ -31,9 +32,9 @@ export default function History(props) {
     const table = history.map((item, index) => {
         return item.available === 0 ? null : (
             <div className="message-history-element" key={index}>
-                {item.message.length > 50 ? (
+                {item.message.length > 48 ? (
                     <p className="message-input">
-                        {item.message.substring(0, 50) + "..."}{" "}
+                        {item.message.substring(0, 48) + "..."}{" "}
                     </p>
                 ) : (
                     <p className="message-input">{item.message}</p>
@@ -79,17 +80,28 @@ export default function History(props) {
             <div className="history-table-wrap">
                 <div className="history-table">
                     <div className="history-table-header">
-                        <p style={{ backgroundColor: "#6e6e80" }}>Message</p>
-                        <p>Naive - Bayes</p>
-                        <p>SVM</p>
-                        <p>Backpropagation</p>
+                        <p 
+                            className="history-table-header-message"
+                            style={{ backgroundColor: "#6e6e80" }}
+                        >
+                                Message
+                        </p>
+                        <p
+                            className="history-table-header-bayes"
+                        >Naive - Bayes</p>
+                        <p
+                            className="history-table-header-svm"
+                        >SVM</p>
+                        <p
+                            className="history-table-header-backpropagation"
+                        >Backpropagation</p>
                     </div>
                     {table}
                 </div>
             </div>
             <div className="history-button">
                 <button onClick={clearHistory} className="clear-history">
-                    CLEAR HISTORY
+                    CLEAR
                 </button>
             </div>
         </div>

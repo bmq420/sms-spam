@@ -1,7 +1,7 @@
 import React from  "react" ;
 import Message from "./Message" ;
 import History from "./History" ;
-import Contact from "./Contact" ;
+import About from "./About" ;
 
 export default function Main() {
     const [navSelection, setNavSelection] = React.useState(0);
@@ -14,7 +14,7 @@ export default function Main() {
             } else if (navSelection === 1) {
                 setMain(<History />);
             } else if (navSelection === 2) {
-                setMain(<Contact />);
+                setMain(<About />);
             }
         }, [navSelection]
     )
@@ -43,7 +43,7 @@ export default function Main() {
                             setNavSelection(2);
                         }}
                     >
-                        CONTACT
+                        ABOUT
                     </li>
                 </ul>
             </div>

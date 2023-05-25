@@ -4,7 +4,6 @@ import axios from "axios";
 export default function Message(props) {
     const [message, setMessage] = React.useState("");
     const [result, setResult] = React.useState("");
-    const [model, setModel] = React.useState(0);
 
     function handleChange(event) {
         setMessage((prev) => event.target.value);
@@ -22,57 +21,54 @@ export default function Message(props) {
         };
         console.log(json);
         if (message !== "") {
-            axios.post("http://localhost:5000/api/v1", json).catch((err) => {
-                console.log(err);
-            });
-            async function getResult() {
-                const res = await axios.get(
-                    "http://localhost:5000/api/v1/result"
-                );
+            axios.post("http://localhost:5000/api/v1", json)
+            .then((res) => {
                 console.log(res.data);
                 setResult(res.data);
-            }
-            getResult();
+            })
+            .catch((err) => {
+                console.log(err);
+            });
         }
-    }
-
-    function handleModel(event) {
-        setModel(event.target.value);
     }
 
     function displayResult() {
         return (
             <div className="result">
                 <h3>MODEL'S RESULT</h3>
-                <p>Please select your model: </p>
-                <select
-                    className="model-result"
-                    value={model}
-                    onChange={handleModel}
-                >
-                    <option value="0">-- Choose model</option>
-                    <option value="1">Naive - Bayes</option>
-                    <option value="2">Support Vector Machine</option>
-                    <option value="3">Backpropagation</option>
-                </select>
-                {model === 1 ? (
-                    <p className="bayes-result">{handleResult(result.bayesResult)}</p>
-                ) : model === 2 ? (
-                    <p className="backpro-result">{handleResult(result.backpropagationResult)}</p>
-                ) : model === 3 ? (
-                    <p className="svm-result">{handleResult(result.svmResult)}</p>
-                ) : (
-                    <p></p>
-                )}
+                <div className="result-table-field">
+                    {resultTable()}
+                </div>
             </div>
         );
     }
 
-    function handleResult(value) {
-        if (value === 1) {
-            return "SPAM message";
+    const resultTable = () => {
+        return (
+            <div className="result-table">
+                <div className="result-table-box result-table-bayes">
+                    <h4>Naive-Bayes</h4>
+                    <p>{handleResult(result.bayesResult)}</p>
+                </div>
+                <div className="result-table-box  result-table-backpropagation">
+                    <h4>Backpropagation</h4>
+                    <p>{handleResult(result.backpropagationResult)}</p>
+                </div>
+                <div className="result-table-box result-table-svm">
+                    <h4>SVM</h4>
+                    <p>{handleResult(result.svmResult)}</p>
+                </div>
+            </div>
+        );
+    }
+
+    function handleResult(result) {
+        if (result === 0) {
+            return "HAM";
+        } else if (result === 1) {
+            return "SPAM";
         }
-        return "Not a SPAM message";
+        return "";
     }
 
     return (

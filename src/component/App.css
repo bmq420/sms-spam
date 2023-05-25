@@ -2,7 +2,9 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+    font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI,
+        Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial,
+        Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
 /*main*/
@@ -40,10 +42,11 @@
     justify-content: center;
     padding: 30px 0;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .nav > ul > li:hover {
-    background-color: rgba(52,53,65,1);
+    background-color: rgba(52, 53, 65, 1);
 }
 
 /*message*/
@@ -83,7 +86,7 @@
     font-size: 20px;
     margin: 0 auto;
     color: white;
-    background-color: rgba(110,110,128);
+    background-color: rgba(110, 110, 128);
     border-radius: 10px;
     resize: none;
     border: none;
@@ -116,6 +119,7 @@
     border-radius: 5px;
     font-size: 15px;
     margin: 20px 20px;
+    cursor: pointer;
 }
 
 .message-box > .butt > button:hover {
@@ -148,17 +152,42 @@
     padding-top: 20px;
 }
 
-.model-result {
-    width: 200px;
-    height: 40px;
-    margin-top: 20px;
-    padding-left: 10px;
-    border-radius: 5px;
-    border: none;
+.result-table-field {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin: 0px auto;
 }
 
-.model-result:focus {
-    outline: none;
+.result-table {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.result-table-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+    padding: 20px;
+    width: 200px;
+    background-color: white;
+    color: black;
+}
+
+.result-table-box > p {
+    padding: 20px 0;
+    height: 60px;
+    font-size: 18px;
+}
+
+.result-table-box > h4 {
+    padding: 20px 0;
+    border-bottom: 1px solid black;
+    height: 60px;
 }
 
 /*history*/
@@ -183,15 +212,28 @@
 }
 
 .clear-history {
+    width: 100px;
     height: 40px;
-    border-radius: 5px;
-    color: white;
-    background-color: #353740;
+    background-color: white;
+    box-shadow: 0 8px #666;
+    color: black;
     border: 1px solid #d9d9e3;
-    padding: 20px 20px;
-    display: flex;
-    align-items: center;
+    border-radius: 5px;
     font-size: 15px;
+    margin: 20px 20px;
+    cursor: pointer;
+}
+
+.clear-history:hover {
+    background-color: #666;
+    color: white;
+}
+
+.clear-history:active {
+    box-shadow: 0 5px #666;
+    background-color: #3e8e41;
+    color: white;
+    transform: translateY(4px);
 }
 
 .history-table-wrap {
@@ -215,7 +257,7 @@
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #F5F5F5;
+    background-color: #f5f5f5;
     border-radius: 10px;
 }
 
@@ -243,19 +285,38 @@
     border-radius: 10px;
     overflow: hidden;
     margin: 20px 40px;
-    background-color: #353740;
 }
 
-.history-table-header > p {
-    padding: 10px 0;
+.history-table-header-message {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 15px;
-    font-weight: bold;
-    color: white;
-    border-right: 0.5px solid white;
-    font-size: 15px;
+    background-color: #353740;
+    padding: 20px 40px;
+    border-right: 1px solid white;
+}
+
+.history-table-header-bayes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #353740;
+    border-right: 1px solid white;
+}
+
+.history-table-header-svm {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #353740;
+    border-right: 1px solid white;
+}
+.history-table-header-backpropagation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #353740;
+    border-right: 1px solid white;
 }
 
 .message-history-element {
@@ -284,15 +345,29 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #353740;
+    background-color: #6e6e80;
+    color: black;
 }
 
 .delete-message > p {
-    color:rgba(217,217,227, 0.5);
+    color: rgba(217, 217, 227, 0.5);
 }
 
 .delete-message > p:hover {
-    color: rgba(217,217,227, 1);
+    color: rgba(217, 217, 227, 1);
     cursor: pointer;
 }
 
+.contact {
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #6e6e80;
+    color: white;
+}
+
+.contact > div {
+    display: flex;
+    padding: 20px 40px;
+}
