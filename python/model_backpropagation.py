@@ -1,63 +1,65 @@
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-nltk.download('stopwords')
-import re
+import tensorflow as tf
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Embedding
+from tensorflow.keras.callbacks import EarlyStopping   
+from sklearn.model_selection import train_test_split
 import pickle
 
 sms = pd.read_csv('E:/sms-spam-python/smsspamcollection/SMSSpamCollection', sep='\t', names=['label','message'])
 sms.drop_duplicates(inplace=True)
 sms.reset_index(drop=True, inplace=True)
 
-corpus = []
-ps = PorterStemmer()
+sms['label'] = sms.label.map({'ham':0, 'spam':1})
 
-for i in range(0,sms.shape[0]):
-    message = re.sub(pattern='[^a-zA-Z]', repl=' ', string=sms.message[i]) #Cleaning special character from the message
-    message = message.lower() #Converting the entire message into lower case
-    words = message.split() # Tokenizing the review by words
-    words = [word for word in words if word not in set(stopwords.words('english'))] #Removing the stop words
-    words = [ps.stem(word) for word in words] #Stemming the words
-    message = ' '.join(words) #Joining the stemmed words
-    corpus.append(message) #Building a corpus of messages
-
-#Save corpus for use in deployment
-file_name = "corpus2.pkl"
-pickle.dump(corpus, open(file_name, 'wb'))
-
-# Convert the preprocessed text data into a feature matrix using CountVectorizer
-from sklearn.feature_extraction.text import CountVectorizer
-cv = CountVectorizer(max_features=2500)
-X = cv.fit_transform(corpus).toarray()
-
-# Convert the labels into binary values
-y = pd.get_dummies(sms['label'])
-y = y.iloc[:, 1].values
-
-# Split the dataset into training and test sets
-from sklearn.model_selection import train_test_split
+#Split data into training and test sets
+X = sms['message'].values
+y = sms['label'].values
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=0)
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
-tf.get_logger().setLevel('ERROR')
+#Prepare the tokenizer
+t = Tokenizer()
+t.fit_on_texts(X_train)
 
-# Define the model architecture
-classifier = tf.keras.models.Sequential([
-    tf.keras.layers.Dense(128, input_shape=(X_train.shape[1],), activation='relu'),
-    tf.keras.layers.Dropout(0.5),
-    tf.keras.layers.Dense(1, activation='sigmoid')
-])
+#Integer encode the documents
+encoded_train = t.texts_to_sequences(X_train)
+encoded_test = t.texts_to_sequences(X_test)
 
+#Pad documents to a max length = 8 words
+max_length = 8
+padded_train = pad_sequences(encoded_train, maxlen=max_length, padding='post')
+padded_test = pad_sequences(encoded_test, maxlen=max_length, padding='post')
 
-# Compile the model
-classifier.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+#Calculate the vocabulary size
+vocab_size = len(t.word_index) + 1
 
-# Train the model
-classifier.fit(X_train, y_train, batch_size=32, epochs=10, validation_data=(X_test, y_test)) 
+#Define the model
+model = Sequential()
+model.add(Embedding(vocab_size, 24, input_length=max_length))
+model.add(Flatten())
+model.add(Dense(500, activation='relu'))
+model.add(Dense(200, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(100, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+
+#Compile the model
+model.compile(optimizer='rmsprop', 
+              loss='binary_crossentropy', 
+              metrics=['accuracy'])
+
+#Define early stopping
+early_stop = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
+
+#Fit the model
+model.fit(x=padded_train, y=y_train, epochs=50, validation_data=(padded_test, y_test), verbose=1, callbacks=[early_stop])
 
 #Save Model
-file_name = "backpropagation.pkl"
-pickle.dump(classifier, open(file_name, 'wb'))
+model.save('backpropagation')
+with open("backpropagation/tokenizer.pkl", "wb") as output:
+    pickle.dump(t, output, pickle.HIGHEST_PROTOCOL)

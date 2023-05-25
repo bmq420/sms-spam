@@ -43,7 +43,7 @@ y = y.iloc[:, 1].values
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=0)
  
-tuned_parameters = {'kernel':['linear'],'C':[1,10,100,1000]}
+tuned_parameters = {'kernel':['linear', 'rbf'], 'gamma':[1e-3, 1e-4], 'C':[1,10,100,1000]}
  
 classifier = GridSearchCV(SVC(), tuned_parameters)
 classifier.fit(X_train, y_train)

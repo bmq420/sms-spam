@@ -1,4 +1,3 @@
-import numpy as np
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -9,18 +8,17 @@ from nltk.stem.porter import PorterStemmer
 nltk.download('stopwords')
 import re
 from sklearn.feature_extraction.text import CountVectorizer
+import tensorflow as tf
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Prediction
 #Import Pickle file
 file_name1 = "bayes.pkl"
 classifier1 = pickle.load(open(file_name1, 'rb'))
 file_name1 = "corpus1.pkl"
 corpus1 = pickle.load(open(file_name1, 'rb'))
 
-file_name2 = "backpropagation.pkl"
-classifier2 = pickle.load(open(file_name2, 'rb'))
-file_name2 = "corpus2.pkl"
-corpus2 = pickle.load(open(file_name2, 'rb'))
+with open("backpropagation/tokenizer.pkl", "rb") as input:
+    tokenizer = pickle.load(input)
 
 file_name3 = "svm.pkl"
 classifier3 = pickle.load(open(file_name3, 'rb'))
@@ -28,7 +26,7 @@ file_name3 = "corpus3.pkl"
 corpus3 = pickle.load(open(file_name3, 'rb'))
 
 
-#Creating the Bag of Words model
+#Load Bayes model
 cv1 = CountVectorizer(max_features=2500)
 X = cv1.fit_transform(corpus1).toarray()
 
@@ -43,20 +41,17 @@ def predict_spam_bayes(sample_message):
     temp = cv1.transform([final_message]).toarray()
     return classifier1.predict(temp)
 
-cv2 = CountVectorizer(max_features=2500)
-X = cv2.fit_transform(corpus2).toarray()
-
+#Load Backpropagation model
 def predict_spam_backpropagation(sample_message):
-    sample_message = re.sub(pattern='[^a-zA-Z]',repl=' ', string = sample_message)
-    sample_message = sample_message.lower()
-    sample_message_words = sample_message.split()
-    sample_message_words = [word for word in sample_message_words if not word in set(stopwords.words('english'))]
-    ps = PorterStemmer()
-    final_message = [ps.stem(word) for word in sample_message_words]
-    final_message = ' '.join(final_message)
-    temp = cv2.transform([final_message]).toarray()
-    return classifier2.predict(temp)
+    max_length = 8
+    message = tokenizer.texts_to_sequences([sample_message])
+    message = pad_sequences(message, maxlen=max_length, padding='post')
+    model = tf.keras.models.load_model('backpropagation')
+    result = (model.predict(message) > 0.5).astype("int32").item()
+    print(result)
+    return result
 
+#Load SVM model
 cv3 = CountVectorizer(max_features=2500)
 X = cv3.fit_transform(corpus3).toarray()
 
@@ -77,6 +72,7 @@ cors = CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:bmqisme123@localhost:3306/sms_spam'
 db = SQLAlchemy(app)
 
+#Database
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(255))
@@ -85,15 +81,13 @@ class Message(db.Model):
     backpropagationResult = db.Column(db.Integer)
     svmResult = db.Column(db.Integer)
 
+
+#Add message to database and send result back
 @app.route('/api/v1', methods=['POST'])
 def add_message():
     data = request.json
     if data['message'] == "":
         return jsonify({'message': 'message is empty'}), 400
-    messages = Message.query.all()
-    for message in messages:
-        if message.message == data['message']:
-            return jsonify({'message': 'message already exists'}), 400
     
     print(data['message'])
 
@@ -103,7 +97,7 @@ def add_message():
     else:
         checkResultBayes = 0
 
-    checkResultBackpropagation = np.round(predict_spam_backpropagation(data['message'])).astype(int)
+    checkResultBackpropagation = predict_spam_backpropagation(data['message'])
     if checkResultBackpropagation == 1:
         checkResultBackpropagation = 1
     else:
@@ -118,13 +112,10 @@ def add_message():
     message = Message(message=data['message'], available=data['available'], bayesResult=checkResultBayes, backpropagationResult=checkResultBackpropagation, svmResult=checkResultSVM)
     db.session.add(message)
     db.session.commit()
-    return jsonify({'id': message.id, 'message': message.message, 'available': message.available, 'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult}), 200
+    print(message)
+    return jsonify({'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult}), 200
 
-@app.route('/api/v1/<int:id>', methods=['GET'])
-def get_message(id):
-    message = Message.query.get(id)
-    return jsonify({'id': message.id, 'message': message.message, 'available': message.available, 'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult}), 200
-
+#Get all messages
 @app.route('/api/v1', methods=['GET'])
 def get_messages():
     messages = Message.query.all()
@@ -134,12 +125,7 @@ def get_messages():
             result.append({'id': message.id, 'message': message.message, 'available': message.available, 'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult})
     return jsonify(result), 200  
 
-@app.route('/api/v1/result', methods=['GET'])
-def get_result():
-    max_id = db.session.query(db.func.max(Message.id)).scalar()
-    message = Message.query.get(max_id)
-    return jsonify({'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult}), 200
-
+#Set unavailable
 @app.route('/api/v1/<int:id>', methods=['POST'])
 def set_available(id):
     message = Message.query.get(id)
@@ -147,8 +133,9 @@ def set_available(id):
     db.session.commit()
     return jsonify({'id': message.id, 'message': message.message, 'available': message.available, 'bayesResult': message.bayesResult, 'backpropagationResult': message.backpropagationResult, "svmResult": message.svmResult}), 200
 
-@app.route('/api/v1', methods=['POST'])
-def set_all_available():
+#Set all unavailable
+@app.route('/api/v1/clear', methods=['POST'])
+def set_all_unavailable():
     messages = Message.query.all()
     for message in messages:
         message.available = 0
